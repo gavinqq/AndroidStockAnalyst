@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# 设置 GitHub 仓库名称
+REPO_NAME="AndroidStockAnalyst"
+USERNAME="gavinqq"
+
+echo "=========================================="
+echo "GitHub 仓库设置指南"
+echo "=========================================="
+echo ""
+echo "步骤 1: 在 GitHub 上创建仓库"
+echo "请访问以下链接创建新仓库:"
+echo "https://github.com/new"
+echo ""
+echo "仓库名称: $REPO_NAME"
+echo "描述: Android Stock Plan App with ChatGPT Integration"
+echo "可见性: Public (或 Private，根据你的选择)"
+echo "不要初始化 README、.gitignore 或 license"
+echo ""
+echo "步骤 2: 创建仓库后，运行以下命令推送代码:"
+echo ""
+echo "git push -u origin main"
+echo ""
+echo "如果使用 HTTPS，你可能需要输入 GitHub 用户名和 Personal Access Token"
+echo "如果使用 SSH，确保你的 SSH 密钥已添加到 GitHub"
+echo ""
+echo "=========================================="
+echo "当前 Git 状态:"
+echo "=========================================="
+git status
+echo ""
+echo "远程仓库配置:"
+git remote -v
+echo ""
+echo "=========================================="

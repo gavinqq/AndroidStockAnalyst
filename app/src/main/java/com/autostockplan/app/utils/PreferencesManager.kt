@@ -13,6 +13,7 @@ class PreferencesManager(context: Context) {
         private const val KEY_COUNTRIES = "countries"
         private const val KEY_CHATGPT_API_KEY = "chatgpt_api_key"
         private const val KEY_LANGUAGE = "language"
+        private const val KEY_MODEL = "model"
         private const val KEY_LAST_IMAGE_PATH = "last_image_path"
     }
 
@@ -31,8 +32,16 @@ class PreferencesManager(context: Context) {
     var language: String
         get() = prefs.getString(KEY_LANGUAGE, "English") ?: "English"
         set(value) = prefs.edit().putString(KEY_LANGUAGE, value).apply()
+        
+    var model: String
+        get() = prefs.getString(KEY_MODEL, "gpt-4o") ?: "gpt-4o"
+        set(value) = prefs.edit().putString(KEY_MODEL, value).apply()
 
     var lastImagePath: String
         get() = prefs.getString(KEY_LAST_IMAGE_PATH, "") ?: ""
         set(value) = prefs.edit().putString(KEY_LAST_IMAGE_PATH, value).apply()
+        
+    fun isConfigured(): Boolean {
+        return countries.isNotEmpty() && chatGptApiKey.isNotEmpty() && language.isNotEmpty()
+    }
 }

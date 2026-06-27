@@ -11,10 +11,10 @@ import com.google.android.material.textfield.TextInputEditText
 class SettingsActivity : AppCompatActivity() {
     
     private lateinit var prefsManager: PreferencesManager
-    private lateinit var etFolderPath: TextInputEditText
     private lateinit var etCountries: TextInputEditText
     private lateinit var etApiKey: TextInputEditText
     private lateinit var etLanguage: TextInputEditText
+    private lateinit var etModel: TextInputEditText
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,16 +25,16 @@ class SettingsActivity : AppCompatActivity() {
         
         prefsManager = PreferencesManager(this)
         
-        etFolderPath = findViewById(R.id.etFolderPath)
         etCountries = findViewById(R.id.etCountries)
         etApiKey = findViewById(R.id.etApiKey)
         etLanguage = findViewById(R.id.etLanguage)
+        etModel = findViewById(R.id.etModel)
         
         // Load current settings
-        etFolderPath.setText(prefsManager.folderPath)
         etCountries.setText(prefsManager.countries)
         etApiKey.setText(prefsManager.chatGptApiKey)
         etLanguage.setText(prefsManager.language)
+        etModel.setText(prefsManager.model)
         
         findViewById<Button>(R.id.btnSaveSettings).setOnClickListener {
             saveSettings()
@@ -42,15 +42,10 @@ class SettingsActivity : AppCompatActivity() {
     }
     
     private fun saveSettings() {
-        val folderPath = etFolderPath.text?.toString()?.trim() ?: ""
         val countries = etCountries.text?.toString()?.trim() ?: ""
         val apiKey = etApiKey.text?.toString()?.trim() ?: ""
         val language = etLanguage.text?.toString()?.trim() ?: "English"
-        
-        if (folderPath.isEmpty()) {
-            Toast.makeText(this, "Folder path cannot be empty", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val model = etModel.text?.toString()?.trim() ?: "gpt-4o"
         
         if (countries.isEmpty()) {
             Toast.makeText(this, "Countries cannot be empty", Toast.LENGTH_SHORT).show()
@@ -58,14 +53,14 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         if (apiKey.isEmpty()) {
-            Toast.makeText(this, "ChatGPT API key cannot be empty", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "API key cannot be empty", Toast.LENGTH_SHORT).show()
             return
         }
         
-        prefsManager.folderPath = folderPath
         prefsManager.countries = countries
         prefsManager.chatGptApiKey = apiKey
         prefsManager.language = language
+        prefsManager.model = model
         
         Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show()
         finish()

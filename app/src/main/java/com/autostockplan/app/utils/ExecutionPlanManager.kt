@@ -2,13 +2,14 @@ package com.autostockplan.app.utils
 
 import android.content.Context
 import com.autostockplan.app.data.ExecutionPlan
+import com.google.gson.Gson
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
 class ExecutionPlanManager(context: Context) {
-    private val context: Context = context.applicationContext
     private val plansDir: File = File(context.getExternalFilesDir(null), "execution_plans")
+    private val gson = Gson()
 
     init {
         if (!plansDir.exists()) {
@@ -16,17 +17,31 @@ class ExecutionPlanManager(context: Context) {
         }
     }
 
-    fun savePlan(content: String, imagePath: String?): String {
+    fun savePlan(
+        content: String,
+        imagePath: String?,
+        countries: String,
+        language: String,
+        model: String
+    ): String {
         val dateTime = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val filename = "${dateTime}.txt"
         val file = File(plansDir, filename)
         
         file.writeText(content)
         
-        // Save metadata if needed
+        val plan = ExecutionPlan(
+            id = dateTime,
+            content = content,
+            imagePath = imagePath,
+            countries = countries,
+            language = language,
+            model = model,
+            createdAt = System.currentTimeMillis()
+        )
+        
         val metadataFile = File(plansDir, "${dateTime}_meta.json")
-        val metadata = """{"imagePath":"${imagePath ?: ""}","createdAt":${System.currentTimeMillis()}}"""
-        metadataFile.writeText(metadata)
+        metadataFile.writeText(gson.toJson(plan))
         
         return filename
     }
@@ -35,35 +50,26 @@ class ExecutionPlanManager(context: Context) {
         val file = File(plansDir, filename)
         if (!file.exists()) return null
         
-        val content = file.readText()
         val dateTimeId = filename.replace(".txt", "")
-        
-        // Try to load metadata
         val metadataFile = File(plansDir, "${dateTimeId}_meta.json")
-        val imagePath = if (metadataFile.exists()) {
-            try {
-                val metadata = metadataFile.readText()
-                // Simple JSON parsing for imagePath
-                val imagePathMatch = Regex("\"imagePath\":\"([^\"]*)\"").find(metadata)
-                imagePathMatch?.groupValues?.get(1)?.takeIf { it.isNotEmpty() }
-            } catch (e: Exception) {
-                null
-            }
-        } else null
         
-        return ExecutionPlan(
-            id = dateTimeId,
-            content = content,
-            imagePath = imagePath
-        )
+        return if (metadataFile.exists()) {
+            try {
+                gson.fromJson(metadataFile.readText(), ExecutionPlan::class.java)
+            } catch (e: Exception) {
+                // Fallback for old format
+                ExecutionPlan(id = dateTimeId, content = file.readText())
+            }
+        } else {
+            ExecutionPlan(id = dateTimeId, content = file.readText())
+        }
     }
 
     fun getAllPlanIds(): List<String> {
         return plansDir.listFiles()
             ?.filter { it.name.endsWith(".txt") }
             ?.map { it.name.replace(".txt", "") }
-            ?.sortedDescending() // Latest first
-            ?: emptyList()
+            ?.sortedDescending() ?: emptyList()
     }
 
     fun getLatestPlan(): ExecutionPlan? {
@@ -76,9 +82,8 @@ class ExecutionPlanManager(context: Context) {
     fun deletePlan(filename: String): Boolean {
         val file = File(plansDir, filename)
         val metadataFile = File(plansDir, filename.replace(".txt", "_meta.json"))
-        
-        val deleted = file.delete()
+        file.delete()
         metadataFile.delete()
-        return deleted
+        return true
     }
 }

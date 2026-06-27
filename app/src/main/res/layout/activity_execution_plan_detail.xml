@@ -26,13 +26,37 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:id="@+id/tvPlanContent"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textSize="14sp"
-            android:text="Loading plan content..." />
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/ivScreenshot"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:scaleType="fitCenter"
+                android:layout_marginBottom="16dp"
+                android:background="#EEEEEE"
+                android:contentDescription="Stock Screenshot" />
+
+            <TextView
+                android:id="@+id/tvMetadata"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textStyle="italic"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvPlanContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:text="Loading plan content..." />
+
+        </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 

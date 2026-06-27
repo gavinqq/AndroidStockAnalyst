@@ -1,9 +1,12 @@
 package com.autostockplan.app.ui
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +19,8 @@ import com.autostockplan.app.utils.ExecutionPlanManager
 import com.autostockplan.app.utils.PreferencesManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
     
@@ -24,6 +29,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvLatestPlan: TextView
     private lateinit var rvHistory: RecyclerView
     private lateinit var adapter: ExecutionPlanAdapter
+    
+    private val selectImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { handleSelectedImage(it) }
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         rvHistory = findViewById(R.id.rvHistory)
         
         findViewById<Button>(R.id.btnRefresh).setOnClickListener {
-            refreshLatestPlan()
+            startAnalysis()
         }
         
         findViewById<Button>(R.id.btnSettings).setOnClickListener {
@@ -46,20 +55,28 @@ class MainActivity : AppCompatActivity() {
         }
         
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
-            refreshLatestPlan()
+            startAnalysis()
         }
         
         rvHistory.layoutManager = LinearLayoutManager(this)
         
-        // Start the monitoring service
+        // Start the monitoring service (still available if user wants auto-monitor)
         startForegroundService(Intent(this, FolderMonitorService::class.java))
         
+        checkConfiguration()
         loadPlans()
     }
     
     override fun onResume() {
         super.onResume()
         loadPlans()
+    }
+    
+    private fun checkConfiguration() {
+        if (!prefsManager.isConfigured()) {
+            Toast.makeText(this, R.string.config_required, Toast.LENGTH_LONG).show()
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
     }
     
     private fun loadPlans() {
@@ -94,31 +111,45 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun refreshLatestPlan() {
-        val lastImagePath = prefsManager.lastImagePath
-        if (lastImagePath.isEmpty()) {
-            tvLatestPlan.text = "No image to analyze"
+    private fun startAnalysis() {
+        if (!prefsManager.isConfigured()) {
+            checkConfiguration()
             return
         }
-        
+        selectImageLauncher.launch("image/*")
+    }
+    
+    private fun handleSelectedImage(uri: Uri) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val file = File(getExternalFilesDir(null), "analysis_${System.currentTimeMillis()}.jpg")
+            val outputStream = FileOutputStream(file)
+            inputStream?.use { input ->
+                outputStream.use { output ->
+                    input.copyTo(output)
+                }
+            }
+            runAnalysis(file.absolutePath)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error selecting image: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun runAnalysis(imagePath: String) {
         val apiKey = prefsManager.chatGptApiKey
-        if (apiKey.isEmpty()) {
-            tvLatestPlan.text = "Please configure ChatGPT API key in Settings"
-            return
-        }
-        
         tvLatestPlan.text = getString(R.string.analyzing)
         
         lifecycleScope.launch {
             try {
                 val countries = prefsManager.countries
                 val language = prefsManager.language
+                val model = prefsManager.model
                 val chatGPTService = ChatGPTService(apiKey)
                 
-                val result = chatGPTService.analyzeStockImage(lastImagePath, countries, language)
+                val result = chatGPTService.analyzeStockImage(imagePath, countries, language, model)
                 
                 result.onSuccess { planContent ->
-                    planManager.savePlan(planContent, lastImagePath)
+                    planManager.savePlan(planContent, imagePath, countries, language, model)
                     loadPlans()
                 }.onFailure { error ->
                     tvLatestPlan.text = getString(R.string.analysis_failed, error.message)

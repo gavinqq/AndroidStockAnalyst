@@ -101,6 +101,8 @@ class FolderMonitorService : Service() {
     }
 
     private fun checkFolderForNewImages() {
+        if (!prefsManager.isConfigured()) return
+
         val folderPath = prefsManager.folderPath
         val folder = File(folderPath)
         
@@ -109,10 +111,6 @@ class FolderMonitorService : Service() {
         }
 
         val apiKey = prefsManager.chatGptApiKey
-        if (apiKey.isEmpty()) {
-            return // Cannot process without API key
-        }
-
         val imageFiles = folder.listFiles { file ->
             file.isFile && file.extension.lowercase() in listOf("jpg", "jpeg", "png", "webp")
         } ?: return
@@ -138,12 +136,13 @@ class FolderMonitorService : Service() {
         try {
             val countries = prefsManager.countries
             val language = prefsManager.language
+            val model = prefsManager.model
             val chatGPTService = ChatGPTService(apiKey)
             
-            val result = chatGPTService.analyzeStockImage(imagePath, countries, language)
+            val result = chatGPTService.analyzeStockImage(imagePath, countries, language, model)
             
             result.onSuccess { planContent ->
-                planManager.savePlan(planContent, imagePath)
+                planManager.savePlan(planContent, imagePath, countries, language, model)
                 
                 // Update notification
                 val notificationManager = getSystemService(NotificationManager::class.java)

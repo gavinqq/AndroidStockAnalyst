@@ -22,7 +22,8 @@ class ChatGPTService(private val apiKey: String) {
     suspend fun analyzeStockImage(
         imagePath: String,
         countries: String,
-        language: String = "English"
+        language: String = "English",
+        model: String = "gpt-4o"
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
             val imageBase64 = encodeImageToBase64(imagePath)
@@ -33,7 +34,7 @@ class ChatGPTService(private val apiKey: String) {
             val nextWorkDay = getNextWorkDay()
             val prompt = buildPrompt(countries, nextWorkDay, language)
 
-            val requestBody = buildRequestBody(imageBase64, prompt)
+            val requestBody = buildRequestBody(imageBase64, prompt, model)
             val request = Request.Builder()
                 .url(API_URL)
                 .header("Authorization", "Bearer $apiKey")
@@ -88,15 +89,16 @@ class ChatGPTService(private val apiKey: String) {
             4. Stop-loss and take-profit levels
             5. Risk management notes
             6. Market outlook for the specified countries
+            7. Analysis history can be found, which includes the screenshot used for analysis, the market, the anaysis time and analysis result are recorded.
             
             IMPORTANT: Please write the entire execution plan in $language language.
             Format the response in a clear, actionable execution plan.
         """.trimIndent()
     }
 
-    private fun buildRequestBody(imageBase64: String, prompt: String): RequestBody {
+    private fun buildRequestBody(imageBase64: String, prompt: String, model: String): RequestBody {
         val jsonBody = JSONObject().apply {
-            put("model", "gpt-4-vision-preview")
+            put("model", model)
             put("messages", org.json.JSONArray().apply {
                 put(JSONObject().apply {
                     put("role", "user")

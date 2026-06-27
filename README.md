@@ -45,8 +45,41 @@ Before using the app, configure the following settings:
 
 ## Build
 
+### 生成 APK
+
+Android Gradle Plugin 需要 **JDK 17** 运行 Gradle。若系统只有 Java 25，请先安装 JDK 17：
+
 ```bash
-./gradlew build
+# macOS (Homebrew)
+brew install openjdk@17
+```
+
+**方式一：使用构建脚本（推荐）**
+
+```bash
+chmod +x build-apk.sh
+./build-apk.sh
+```
+
+脚本会自动查找 JDK 17（Homebrew 或 Android Studio 自带），并执行 `./gradlew assembleDebug`。  
+生成的 **Debug APK** 路径：`app/build/outputs/apk/debug/app-debug.apk`。
+
+**方式二：手动指定 Java 17 后构建**
+
+```bash
+# 使用 Homebrew 安装的 JDK 17（Apple Silicon）
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+
+# 或 Intel Mac
+# export JAVA_HOME="/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+
+./gradlew assembleDebug
+```
+
+**Release APK（签名需自行配置）：**
+
+```bash
+./gradlew assembleRelease
 ```
 
 ## License

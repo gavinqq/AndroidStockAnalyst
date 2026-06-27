@@ -2,18 +2,22 @@
     <string name="app_name">Auto Stock Plan</string>
     <string name="title_latest_plan">Latest Execution Plan</string>
     <string name="title_history">History</string>
-    <string name="refresh">Refresh</string>
+    <string name="refresh">Analysis</string>
     <string name="settings">Settings</string>
     <string name="no_plan_available">No execution plan available</string>
     <string name="monitoring">Monitoring: %1$s</string>
-    <string name="folder_path">Download Folder Path</string>
+    <string name="folder_path">Default Screenshot Folder</string>
     <string name="countries">Stock Market Countries</string>
     <string name="countries_hint">e.g., US, CN, HK, JP</string>
-    <string name="chatgpt_api_key">ChatGPT API Key</string>
+    <string name="chatgpt_api_key">ChatGPT API Key (Token)</string>
+    <string name="ai_model">AI Model</string>
+    <string name="ai_model_hint">e.g., gpt-4o, gpt-4-turbo</string>
     <string name="language">Execution Plan Language</string>
     <string name="language_hint">e.g., English, Chinese, Japanese, Spanish</string>
     <string name="save">Save</string>
     <string name="analyzing">Analyzing image...</string>
     <string name="analysis_failed">Analysis failed: %1$s</string>
     <string name="plan_generated">Plan generated at %1$s</string>
+    <string name="config_required">Please configure the app first</string>
+    <string name="select_image">Select Image for Analysis</string>
 </resources>

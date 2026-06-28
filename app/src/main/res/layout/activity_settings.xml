@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_background"
     tools:context=".ui.SettingsActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -31,71 +32,220 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="16dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/model_provider"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/chatgpt_api_key"
-                android:layout_marginBottom="16dp">
+                app:boxBackgroundMode="outline"
+                app:endIconMode="dropdown_menu"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp">
+
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/etProvider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="56dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/app_text"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/api_token"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="outline"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etApiKey"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:minHeight="56dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/app_text"
                     android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ai_model"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/ai_model"
-                app:helperText="@string/ai_model_hint"
-                android:layout_marginBottom="16dp">
+                app:boxBackgroundMode="outline"
+                app:endIconMode="dropdown_menu"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="2dp">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/etModel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:minHeight="56dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/app_text"
+                    android:inputType="none" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ai_model_hint"
+                android:textColor="@color/app_text_muted"
+                android:textSize="13sp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/countries"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/countries"
-                app:helperText="@string/countries_hint"
-                android:layout_marginBottom="16dp">
+                app:boxBackgroundMode="outline"
+                app:endIconMode="dropdown_menu"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="2dp">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/etCountries"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:minHeight="56dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/app_text"
+                    android:inputType="none" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/countries_hint"
+                android:textColor="@color/app_text_muted"
+                android:textSize="13sp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/language"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/language"
-                app:helperText="@string/language_hint"
-                android:layout_marginBottom="16dp">
+                app:boxBackgroundMode="outline"
+                app:endIconMode="dropdown_menu"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="2dp">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/etLanguage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:minHeight="56dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/app_text"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/language_hint"
+                android:textColor="@color/app_text_muted"
+                android:textSize="13sp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:id="@+id/tvOtherLanguage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/other_language"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutOtherLanguage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="outline"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="2dp"
+                android:visibility="gone">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etOtherLanguage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="56dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/app_text"
                     android:inputType="text" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvOtherLanguageHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/other_language_hint"
+                android:textColor="@color/app_text_muted"
+                android:textSize="13sp"
+                android:layout_marginBottom="14dp"
+                android:visibility="gone" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/folder_path"
+                app:boxBackgroundMode="outline"
                 android:layout_marginBottom="16dp"
                 android:visibility="gone">
 

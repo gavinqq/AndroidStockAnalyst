@@ -15,7 +15,11 @@ import java.util.*
 class ChatGPTService(private val apiKey: String) {
     
     companion object {
-        private const val API_URL = "https://api.openai.com/v1/chat/completions"
+        private const val OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
+        private const val DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
+        private const val QWEN_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+        private const val DOUBAO_API_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+        private const val GEMINI_API_URL_PREFIX = "https://generativelanguage.googleapis.com/v1beta/models/"
         private val JSON = "application/json; charset=utf-8".toMediaType()
     }
 
@@ -23,7 +27,8 @@ class ChatGPTService(private val apiKey: String) {
         imagePath: String,
         countries: String,
         language: String = "English",
-        model: String = "gpt-4o"
+        model: String = "gpt-4o",
+        provider: String = "ChatGPT"
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
             val imageBase64 = encodeImageToBase64(imagePath)
@@ -34,28 +39,14 @@ class ChatGPTService(private val apiKey: String) {
             val nextWorkDay = getNextWorkDay()
             val prompt = buildPrompt(countries, nextWorkDay, language)
 
-            val requestBody = buildRequestBody(imageBase64, prompt, model)
-            val request = Request.Builder()
-                .url(API_URL)
-                .header("Authorization", "Bearer $apiKey")
-                .header("Content-Type", "application/json")
-                .post(requestBody)
-                .build()
+            val request = buildRequest(imageBase64, prompt, model, provider)
 
             val client = OkHttpClient()
             val response = client.newCall(request).execute()
             
             if (response.isSuccessful) {
                 val responseBody = response.body?.string()
-                val jsonResponse = JSONObject(responseBody ?: "")
-                val choices = jsonResponse.getJSONArray("choices")
-                if (choices.length() > 0) {
-                    val message = choices.getJSONObject(0).getJSONObject("message")
-                    val content = message.getString("content")
-                    Result.success(content)
-                } else {
-                    Result.failure(IOException("No response from ChatGPT"))
-                }
+                Result.success(parseResponse(responseBody ?: "", provider))
             } else {
                 val errorBody = response.body?.string() ?: "Unknown error"
                 Result.failure(IOException("API error: ${response.code} - $errorBody"))
@@ -63,6 +54,35 @@ class ChatGPTService(private val apiKey: String) {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun buildRequest(
+        imageBase64: String,
+        prompt: String,
+        model: String,
+        provider: String
+    ): Request {
+        if (provider == "Gemini") {
+            return Request.Builder()
+                .url("$GEMINI_API_URL_PREFIX$model:generateContent?key=$apiKey")
+                .header("Content-Type", "application/json")
+                .post(buildGeminiRequestBody(imageBase64, prompt))
+                .build()
+        }
+
+        val apiUrl = when (provider) {
+            "Deepseek" -> DEEPSEEK_API_URL
+            "QWEN" -> QWEN_API_URL
+            "Doubao" -> DOUBAO_API_URL
+            else -> OPENAI_API_URL
+        }
+
+        return Request.Builder()
+            .url(apiUrl)
+            .header("Authorization", "Bearer $apiKey")
+            .header("Content-Type", "application/json")
+            .post(buildOpenAiCompatibleRequestBody(imageBase64, prompt, model))
+            .build()
     }
 
     private fun encodeImageToBase64(imagePath: String): String? {
@@ -78,6 +98,23 @@ class ChatGPTService(private val apiKey: String) {
     }
 
     private fun buildPrompt(countries: String, nextWorkDay: String, language: String): String {
+        if (countries.trim().equals("US", ignoreCase = true)) {
+            return """
+                Analyze this stock holding image. Based on the stock markets in these countries: $countries,
+                provide an overview trend for of the next work day: $nextWorkDay.
+                
+                Please include:
+                1. Current holdings analysis
+                2. Stop-loss and take-profit levels
+                3. Risk management notes
+                4. Market outlook for the specified countries
+                5. Analysis history can be found, which includes the screenshot used for analysis, the market, the anaysis time and analysis result are recorded.
+                
+                IMPORTANT: Please write in $language language.
+                Format the response in a clear plan.
+            """.trimIndent()
+        }
+
         return """
             Analyze this stock holding image. Based on the stock markets in these countries: $countries,
             provide a detailed execution plan for trading activities on the next work day: $nextWorkDay.
@@ -96,7 +133,7 @@ class ChatGPTService(private val apiKey: String) {
         """.trimIndent()
     }
 
-    private fun buildRequestBody(imageBase64: String, prompt: String, model: String): RequestBody {
+    private fun buildOpenAiCompatibleRequestBody(imageBase64: String, prompt: String, model: String): RequestBody {
         val jsonBody = JSONObject().apply {
             put("model", model)
             put("messages", org.json.JSONArray().apply {
@@ -120,6 +157,46 @@ class ChatGPTService(private val apiKey: String) {
         }
         
         return jsonBody.toString().toRequestBody(JSON)
+    }
+
+    private fun buildGeminiRequestBody(imageBase64: String, prompt: String): RequestBody {
+        val jsonBody = JSONObject().apply {
+            put("contents", org.json.JSONArray().apply {
+                put(JSONObject().apply {
+                    put("parts", org.json.JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("text", prompt)
+                        })
+                        put(JSONObject().apply {
+                            put("inline_data", JSONObject().apply {
+                                put("mime_type", "image/jpeg")
+                                put("data", imageBase64)
+                            })
+                        })
+                    })
+                })
+            })
+        }
+
+        return jsonBody.toString().toRequestBody(JSON)
+    }
+
+    private fun parseResponse(responseBody: String, provider: String): String {
+        val jsonResponse = JSONObject(responseBody)
+        if (provider == "Gemini") {
+            val candidates = jsonResponse.getJSONArray("candidates")
+            if (candidates.length() == 0) throw IOException("No response from $provider")
+            val parts = candidates.getJSONObject(0)
+                .getJSONObject("content")
+                .getJSONArray("parts")
+            if (parts.length() == 0) throw IOException("No response from $provider")
+            return parts.getJSONObject(0).getString("text")
+        }
+
+        val choices = jsonResponse.getJSONArray("choices")
+        if (choices.length() == 0) throw IOException("No response from $provider")
+        val message = choices.getJSONObject(0).getJSONObject("message")
+        return message.getString("content")
     }
 
     private fun getNextWorkDay(): String {

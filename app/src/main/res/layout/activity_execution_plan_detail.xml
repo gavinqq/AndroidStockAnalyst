@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_background"
     tools:context=".ui.ExecutionPlanDetailActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -38,7 +39,7 @@
                 android:layout_height="300dp"
                 android:scaleType="fitCenter"
                 android:layout_marginBottom="16dp"
-                android:background="#EEEEEE"
+                android:background="@drawable/screenshot_background"
                 android:contentDescription="Stock Screenshot" />
 
             <TextView
@@ -46,6 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
+                android:textColor="@color/app_text_muted"
                 android:textStyle="italic"
                 android:textSize="12sp" />
 
@@ -53,6 +55,7 @@
                 android:id="@+id/tvPlanContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/app_text"
                 android:textSize="14sp"
                 android:text="Loading plan content..." />
 

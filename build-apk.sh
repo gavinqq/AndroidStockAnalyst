@@ -1,34 +1,49 @@
 #!/bin/bash
-# 使用 Java 17 构建 APK（Android Gradle Plugin 要求 JDK 17）
-# 若未安装：brew install openjdk@17
+# Build a debug APK. Android Gradle Plugin requires Java 17 or newer.
 
 set -e
 cd "$(dirname "$0")"
 
-# 优先使用 JDK 17（Homebrew 或 Android Studio 自带）
-JAVA17_HOME=""
+# Prefer a known JDK 17, but allow any installed JDK >= 17.
+JAVA_HOME_CANDIDATE=""
 if [ -d "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" ]; then
-  JAVA17_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+  JAVA_HOME_CANDIDATE="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
 elif [ -d "/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" ]; then
-  JAVA17_HOME="/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+  JAVA_HOME_CANDIDATE="/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
 elif [ -d "/Applications/Android Studio.app/Contents/jbr/Contents/Home" ]; then
-  JAVA17_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+  JAVA_HOME_CANDIDATE="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+elif command -v /usr/libexec/java_home >/dev/null 2>&1; then
+  JAVA_HOME_CANDIDATE="$(/usr/libexec/java_home 2>/dev/null || true)"
 fi
 
-if [ -n "$JAVA17_HOME" ]; then
-  export JAVA_HOME="$JAVA17_HOME"
-  echo "Using JAVA_HOME=$JAVA_HOME (JDK 17)"
-  "$JAVA_HOME/bin/java" -version
+if [ -n "$JAVA_HOME_CANDIDATE" ] && [ -x "$JAVA_HOME_CANDIDATE/bin/java" ]; then
+  export JAVA_HOME="$JAVA_HOME_CANDIDATE"
+elif command -v java >/dev/null 2>&1; then
+  JAVA_HOME_CANDIDATE=""
 else
-  echo "未检测到 JDK 17。Android Gradle Plugin 需要 JDK 17 才能构建。"
+  echo "未检测到 Java。Android Gradle Plugin 需要 JDK 17 或更高版本。"
   echo "请安装后重试："
   echo "  brew install openjdk@17"
   echo "然后再次运行：./build-apk.sh"
   exit 1
 fi
 
+JAVA_VERSION_OUTPUT="$(java -version 2>&1 | head -n 1)"
+JAVA_MAJOR="$(printf "%s" "$JAVA_VERSION_OUTPUT" | sed -E 's/.*version "([0-9]+).*/\1/')"
+
+if ! printf "%s" "$JAVA_MAJOR" | grep -Eq '^[0-9]+$' || [ "$JAVA_MAJOR" -lt 17 ]; then
+  echo "当前 Java 版本不支持构建：$JAVA_VERSION_OUTPUT"
+  echo "Android Gradle Plugin 需要 JDK 17 或更高版本。"
+  exit 1
+fi
+
+echo "Using Java: $JAVA_VERSION_OUTPUT"
+if [ -n "${JAVA_HOME:-}" ]; then
+  echo "JAVA_HOME=$JAVA_HOME"
+fi
+
 echo "Building debug APK..."
-./gradlew assembleDebug
+./gradlew --no-daemon assembleDebug
 
 APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
 if [ -f "$APK_PATH" ]; then

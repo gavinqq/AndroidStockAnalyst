@@ -110,7 +110,8 @@ class FolderMonitorService : Service() {
             return
         }
 
-        val apiKey = prefsManager.chatGptApiKey
+        val provider = prefsManager.modelProvider
+        val apiKey = prefsManager.getApiToken(provider)
         val imageFiles = folder.listFiles { file ->
             file.isFile && file.extension.lowercase() in listOf("jpg", "jpeg", "png", "webp")
         } ?: return
@@ -126,20 +127,20 @@ class FolderMonitorService : Service() {
                 
                 // Process image asynchronously
                 serviceScope.launch {
-                    processStockImage(imagePath, apiKey)
+                    processStockImage(imagePath, apiKey, provider)
                 }
             }
         }
     }
 
-    private suspend fun processStockImage(imagePath: String, apiKey: String) {
+    private suspend fun processStockImage(imagePath: String, apiKey: String, provider: String) {
         try {
             val countries = prefsManager.countries
             val language = prefsManager.language
-            val model = prefsManager.model
+            val model = prefsManager.getModel(provider)
             val chatGPTService = ChatGPTService(apiKey)
             
-            val result = chatGPTService.analyzeStockImage(imagePath, countries, language, model)
+            val result = chatGPTService.analyzeStockImage(imagePath, countries, language, model, provider)
             
             result.onSuccess { planContent ->
                 planManager.savePlan(planContent, imagePath, countries, language, model)

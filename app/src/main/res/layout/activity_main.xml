@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_background"
     tools:context=".ui.MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -37,6 +38,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/title_latest_plan"
+                android:textColor="@color/app_text"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -46,7 +48,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
-                android:background="@android:drawable/dialog_holo_light_frame"
+                android:background="@drawable/panel_background"
+                android:textColor="@color/app_text"
                 android:text="@string/no_plan_available"
                 android:minHeight="120dp"
                 android:scrollbars="vertical" />
@@ -81,6 +84,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/title_history"
+                android:textColor="@color/app_text"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginTop="24dp"
